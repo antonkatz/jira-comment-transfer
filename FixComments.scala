@@ -12,6 +12,9 @@ val originalCommentDateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 
 // 18/Aug/15 10:54 AM
 val targetCommentDateFormat = new SimpleDateFormat("dd/MMM/yy hh:mm aa")
 
+val userMap = Map("marta" -> "marta-", "michael.brudno" -> "brudno", "sergiu.dumitriu" -> "sdumitriu",
+  "daniel.gross" -> "danielpgross", "orion.buske" -> "buske", "veronika.koltunova" -> "veronikaslc",
+  "courtney.hum" -> "CourtneyHum")
 
 var issuesAsLines = scala.io.Source.fromFile(issuesFile).getLines().toList
 var header = issuesAsLines.head
@@ -82,7 +85,8 @@ def issueFromItem(item: Node): XmlIssue =
 
 def commentFromCommentNode(node: Node): Comment =
 {
-  val author = node \@ "author"
+  var author = node \@ "author"
+  userMap get author foreach {a => author = a}
   val stringDate = node \@ "created"
   val body = node.text
   val date = originalCommentDateFormat.parse(stringDate)
