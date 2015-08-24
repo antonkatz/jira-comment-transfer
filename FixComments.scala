@@ -54,7 +54,16 @@ writer close()
 def issueFromRow(row: String): CsvIssue =
 {
   val issue = new CsvIssue
-  issue.columns = row split "\t" map {_.trim} toList;
+  issue.columns = row split "\t" map {c =>
+    val trimmed = c.trim
+    var noQuotes = trimmed
+    if (noQuotes nonEmpty) {
+      if (noQuotes.charAt(0) == '"') noQuotes = noQuotes.tail
+      if (noQuotes.charAt(noQuotes.length - 1) == '"') noQuotes = noQuotes.init
+      noQuotes = noQuotes.replaceAll("\"\"", "\"")
+    }
+    noQuotes
+  } toList;
   if (issue.columnCount < 2) {
     throw new Exception("CSV improperly formatted")
   }
@@ -108,12 +117,12 @@ def reformatLines(lines: List[String]): List[String] =
 
 def appendHeader(header: String, padBy: Int): String = {
   val append = (0 until padBy) map {i => "Comment" + i} reduce (_ + "\t" + _)
-  header + append
+  header + "\t" + append
 }
 
 def mergeIssues(issues: List[(CsvIssue, XmlIssue)], fillToColumn: Int): Iterable[CsvIssue] = issues map {pair =>
   val csv = pair._1
-  csv.columns padTo (fillToColumn, "\t")
+  csv.columns padTo (fillToColumn, "-")
   csv.columns ++= pair._2.comments map {_.toString}
   csv
 }
